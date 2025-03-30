@@ -1,0 +1,729 @@
+basePath: /api
+definitions:
+  handlers.AuthResponse:
+    properties:
+      error:
+        type: string
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/models.UserResponse'
+    type: object
+  handlers.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  handlers.SignupRequest:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 6
+        type: string
+      username:
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+  models.Category:
+    properties:
+      color:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      icon_url:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      prompt_count:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  models.CategoryCreate:
+    properties:
+      color:
+        type: string
+      description:
+        type: string
+      icon_url:
+        type: string
+      name:
+        type: string
+    required:
+    - name
+    type: object
+  models.CategoryUpdate:
+    properties:
+      color:
+        type: string
+      description:
+        type: string
+      icon_url:
+        type: string
+      name:
+        type: string
+    type: object
+  models.Prompt:
+    properties:
+      category_id:
+        type: string
+      content:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      favorite_count:
+        type: integer
+      id:
+        type: string
+      image_url:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+      view_count:
+        type: integer
+    type: object
+  models.PromptCreate:
+    properties:
+      category_id:
+        type: string
+      content:
+        type: string
+      description:
+        type: string
+      image_url:
+        type: string
+      title:
+        type: string
+    required:
+    - category_id
+    - content
+    - title
+    type: object
+  models.PromptUpdate:
+    properties:
+      category_id:
+        type: string
+      content:
+        type: string
+      description:
+        type: string
+      image_url:
+        type: string
+      title:
+        type: string
+    type: object
+  models.UserResponse:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      favoriteCount:
+        description: Ignored by GORM
+        type: integer
+      id:
+        type: string
+      is_admin:
+        type: boolean
+      last_login:
+        type: string
+      promptCount:
+        description: Ignored by GORM
+        type: integer
+      updated_at:
+        type: string
+      username:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: This is the API documentation for the backend service.
+  title: Backend API
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate a user and return a JWT token
+      parameters:
+      - description: Login request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.AuthResponse'
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Invalid credentials
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Login a user
+      tags:
+      - Auth
+  /auth/me:
+    get:
+      consumes:
+      - application/json
+      description: Verify the JWT token and return user information
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.AuthResponse'
+        "401":
+          description: Invalid token
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: User not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Verify authentication token
+      tags:
+      - Auth
+  /auth/signup:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user account
+      parameters:
+      - description: Signup request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.SignupRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handlers.AuthResponse'
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: User already exists
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Sign up a new user
+      tags:
+      - Auth
+  /categories:
+    get:
+      description: Retrieve a list of all available categories
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Category'
+            type: array
+        "500":
+          description: Failed to get categories
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get all categories
+      tags:
+      - Categories
+    post:
+      consumes:
+      - application/json
+      description: Create a new category with the given name
+      parameters:
+      - description: Category to create
+        in: body
+        name: category
+        required: true
+        schema:
+          $ref: '#/definitions/models.CategoryCreate'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Category'
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Failed to create category
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new category
+      tags:
+      - Categories
+  /categories/{id}:
+    delete:
+      description: Delete an existing category
+      parameters:
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Invalid category ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Failed to delete category
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete a category
+      tags:
+      - Categories
+    get:
+      description: Retrieve details of a specific category by ID
+      parameters:
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Category'
+        "400":
+          description: Invalid category ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Category not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get a specific category
+      tags:
+      - Categories
+    put:
+      consumes:
+      - application/json
+      description: Update an existing category's information
+      parameters:
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated category
+        in: body
+        name: category
+        required: true
+        schema:
+          $ref: '#/definitions/models.CategoryUpdate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Category'
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Failed to update category
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update a category
+      tags:
+      - Categories
+  /categories/{id}/prompts:
+    get:
+      description: Retrieve all prompts belonging to a specific category
+      parameters:
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Page number for pagination
+        in: query
+        name: page
+        type: integer
+      - description: Number of items per page
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid category ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Failed to get prompts
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get prompts in a category
+      tags:
+      - Categories
+      - Prompts
+  /health:
+    get:
+      description: Get the current health status of the API
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Check API health
+      tags:
+      - Health
+  /prompts:
+    get:
+      description: Retrieve a list of prompts with pagination and filtering options
+      parameters:
+      - description: Page number for pagination
+        in: query
+        name: page
+        type: integer
+      - description: Number of items per page
+        in: query
+        name: pageSize
+        type: integer
+      - description: Filter by category ID
+        in: query
+        name: categoryId
+        type: string
+      - description: Search term for filtering prompts
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Failed to get prompts
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get all prompts
+      tags:
+      - Prompts
+    post:
+      consumes:
+      - application/json
+      description: Create a new prompt with the provided information
+      parameters:
+      - description: Prompt to create
+        in: body
+        name: prompt
+        required: true
+        schema:
+          $ref: '#/definitions/models.PromptCreate'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Prompt'
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Not authenticated
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Failed to create prompt
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new prompt
+      tags:
+      - Prompts
+  /prompts/{id}:
+    delete:
+      description: Delete an existing prompt
+      parameters:
+      - description: Prompt ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Invalid prompt ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Not authenticated
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Not authorized to delete this prompt
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Prompt not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Failed to delete prompt
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete a prompt
+      tags:
+      - Prompts
+    get:
+      description: Retrieve details of a specific prompt by ID
+      parameters:
+      - description: Prompt ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Prompt'
+        "400":
+          description: Invalid prompt ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Prompt not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get a specific prompt
+      tags:
+      - Prompts
+    put:
+      consumes:
+      - application/json
+      description: Update an existing prompt's information
+      parameters:
+      - description: Prompt ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated prompt information
+        in: body
+        name: prompt
+        required: true
+        schema:
+          $ref: '#/definitions/models.PromptUpdate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Prompt'
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Not authenticated
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Not authorized to update this prompt
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Prompt not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Failed to update prompt
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update a prompt
+      tags:
+      - Prompts
+  /prompts/{id}/like:
+    post:
+      description: Like or unlike a prompt for the authenticated user
+      parameters:
+      - description: Prompt ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid prompt ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Not authenticated
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Failed to process like
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Toggle like on a prompt
+      tags:
+      - Prompts
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
