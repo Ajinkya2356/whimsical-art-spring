@@ -1,11 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
 import AnimatedBackground from '@/components/AnimatedBackground';
 import TagFilter from '@/components/TagFilter';
 import EnhancedPromptCard from '@/components/EnhancedPromptCard';
-
+import { icons } from 'lucide-react';
 // Mock data - in a real app, this would come from Supabase
 const mockPrompts = [
   {
@@ -63,30 +62,30 @@ const Index = () => {
   // Filter prompts whenever search query, tags, or view changes
   useEffect(() => {
     let filtered = mockPrompts;
-    
+
     // Filter by search query if it exists
     if (searchQuery.trim() !== "") {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(prompt => 
-        prompt.title.toLowerCase().includes(query) || 
+      filtered = filtered.filter(prompt =>
+        prompt.title.toLowerCase().includes(query) ||
         prompt.description.toLowerCase().includes(query) ||
         prompt.tags.some(tag => tag.toLowerCase().includes(query))
       );
     }
-    
+
     // Filter by selected tags if any are selected
     if (selectedTags.length > 0) {
-      filtered = filtered.filter(prompt => 
+      filtered = filtered.filter(prompt =>
         selectedTags.some(tag => prompt.tags.includes(tag))
       );
     }
-    
+
     // Filter by view selection
     if (selectedView === "trending") {
       filtered = filtered.filter(prompt => prompt.trending);
     }
     // We would add favorites filtering here in a real app with user auth
-    
+
     setFilteredPrompts(filtered);
   }, [searchQuery, selectedTags, selectedView]);
 
@@ -95,7 +94,7 @@ const Index = () => {
       setSelectedTags([]);
       return;
     }
-    
+
     if (selectedTags.includes(tag)) {
       setSelectedTags(selectedTags.filter(t => t !== tag));
     } else {
@@ -114,25 +113,25 @@ const Index = () => {
   return (
     <div className="min-h-screen relative overflow-x-hidden">
       <AnimatedBackground />
-      
+
       <div className="container mx-auto max-w-6xl">
         <Header />
         <Hero searchQuery={searchQuery} onSearchChange={handleSearchChange} />
-        
+
         <main className="px-6 pb-20">
-          <TagFilter 
-            selectedTags={selectedTags} 
-            selectedView={selectedView} 
+          <TagFilter
+            selectedTags={selectedTags}
+            selectedView={selectedView}
             onTagSelect={handleTagSelect}
             onViewSelect={handleViewSelect}
           />
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
             {filteredPrompts.map(prompt => (
-              <EnhancedPromptCard 
-                key={prompt.id} 
+              <EnhancedPromptCard
+                key={prompt.id}
                 id={prompt.id}
-                title={prompt.title} 
+                title={prompt.title}
                 description={prompt.description}
                 imageUrl={prompt.imageUrl}
                 tags={prompt.tags}
@@ -140,7 +139,7 @@ const Index = () => {
               />
             ))}
           </div>
-          
+
           {filteredPrompts.length === 0 && (
             <div className="text-center py-20">
               <h3 className="text-2xl text-primary mb-2">No prompts found</h3>
@@ -148,9 +147,21 @@ const Index = () => {
             </div>
           )}
         </main>
-        
+
         <footer className="py-8 text-center text-sm text-muted-foreground">
-          <p>© 2023 Ghibli Prompt Garden. Inspired by the magical worlds of Studio Ghibli.</p>
+          <p>
+            © 2024 Made with ❤️ by <a href="https://github.com/Ajinkya2356" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Ajinkya Jagtap</a>.
+          </p>
+          <div className="flex justify-center space-x-4 mt-2">
+            <a href="https://github.com/Ajinkya2356" target="_blank" rel="noopener noreferrer" className="hover:text-primary">
+
+              <icons.Github className="text-muted-foreground" />
+
+            </a>
+            <a href="https://linkedin.com/in/ajinkya-ai" target="_blank" rel="noopener noreferrer" className="hover:text-primary">
+              <icons.Linkedin className="text-muted-foreground" />
+            </a>
+          </div>
         </footer>
       </div>
     </div>
