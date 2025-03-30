@@ -6,16 +6,16 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 
 const tags = [
   { id: "all", name: "All Prompts", icon: <LayoutGrid size={18} /> },
-  { id: "Forest", name: "Forest", icon: <Tag size={18} /> },
-  { id: "Spirit", name: "Spirit", icon: <Tag size={18} /> },
-  { id: "Landscape", name: "Landscape", icon: <Tag size={18} /> },
-  { id: "Character", name: "Character", icon: <Tag size={18} /> },
-  { id: "Magic", name: "Magic", icon: <Tag size={18} /> },
-  { id: "Sky", name: "Sky", icon: <Tag size={18} /> },
-  { id: "Ocean", name: "Ocean", icon: <Tag size={18} /> },
-  { id: "Castle", name: "Castle", icon: <Tag size={18} /> },
-  { id: "Animal", name: "Animal", icon: <Tag size={18} /> },
-  { id: "Fantasy", name: "Fantasy", icon: <Tag size={18} /> }
+  { id: "forest", name: "Forest", icon: <Tag size={18} /> },
+  { id: "spirit", name: "Spirit", icon: <Tag size={18} /> },
+  { id: "landscape", name: "Landscape", icon: <Tag size={18} /> },
+  { id: "character", name: "Character", icon: <Tag size={18} /> },
+  { id: "magic", name: "Magic", icon: <Tag size={18} /> },
+  { id: "sky", name: "Sky", icon: <Tag size={18} /> },
+  { id: "ocean", name: "Ocean", icon: <Tag size={18} /> },
+  { id: "castle", name: "Castle", icon: <Tag size={18} /> },
+  { id: "animal", name: "Animal", icon: <Tag size={18} /> },
+  { id: "fantasy", name: "Fantasy", icon: <Tag size={18} /> }
 ];
 
 const views = [
@@ -56,14 +56,14 @@ const TagFilter = ({ selectedTags, selectedView, onTagSelect, onViewSelect }: Ta
         </div>
       </div>
       
-      <ScrollArea className="w-full pb-4">
-        <div className="flex flex-nowrap gap-2 py-2 px-1 overflow-x-auto hide-scrollbar">
+      <ScrollArea className="w-full">
+        <div className="flex flex-wrap gap-2 py-2 px-1">
           {tags.map(tag => (
             <Button 
               key={tag.id}
-              variant={(tag.id === "all" && selectedTags.length === 0) || selectedTags.includes(tag.id) ? "default" : "outline"}
+              variant={tag.id === "all" && selectedTags.length === 0 || selectedTags.includes(tag.id) ? "default" : "outline"}
               size="sm"
-              className="flex items-center gap-2 rounded-full transition-all whitespace-nowrap flex-shrink-0"
+              className={`flex items-center gap-2 rounded-full transition-all`}
               onClick={() => onTagSelect(tag.id)}
             >
               {tag.icon}
@@ -72,16 +72,6 @@ const TagFilter = ({ selectedTags, selectedView, onTagSelect, onViewSelect }: Ta
           ))}
         </div>
       </ScrollArea>
-      
-      <style jsx>{`
-        .hide-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-        .hide-scrollbar {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}</style>
     </div>
   );
 };
