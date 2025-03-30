@@ -3,17 +3,18 @@ import React, { useState } from 'react';
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
 import AnimatedBackground from '@/components/AnimatedBackground';
-import PromptCard, { PromptCardProps } from '@/components/PromptCard';
 import TagFilter from '@/components/TagFilter';
+import EnhancedPromptCard from '@/components/EnhancedPromptCard';
 
 // Mock data - in a real app, this would come from Supabase
-const mockPrompts: PromptCardProps[] = [
+const mockPrompts = [
   {
     id: "1",
     title: "Spirit of the Forest",
     description: "A gentle forest spirit with glowing eyes, surrounded by tiny floating light orbs in a misty ancient forest at dusk.",
     imageUrl: "https://images.unsplash.com/photo-1518495973542-4542c06a5843",
-    tags: ["Forest", "Spirit", "Magic"]
+    tags: ["Forest", "Spirit", "Magic"],
+    trending: true
   },
   {
     id: "2",
@@ -27,7 +28,8 @@ const mockPrompts: PromptCardProps[] = [
     title: "River Guardian",
     description: "A wise dragon spirit coiled in a crystal-clear river, scales shimmer like opals under the moonlight.",
     imageUrl: "https://images.unsplash.com/photo-1472396961693-142e6e269027",
-    tags: ["Animal", "Spirit", "Magic", "Fantasy"]
+    tags: ["Animal", "Spirit", "Magic", "Fantasy"],
+    trending: true
   },
   {
     id: "4",
@@ -54,6 +56,7 @@ const mockPrompts: PromptCardProps[] = [
 
 const Index = () => {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectedView, setSelectedView] = useState<string>("all");
 
   const handleTagSelect = (tag: string) => {
     if (tag === "all") {
@@ -68,32 +71,56 @@ const Index = () => {
     }
   };
 
-  const filteredPrompts = selectedTags.length > 0
+  const handleViewSelect = (view: string) => {
+    setSelectedView(view);
+  };
+
+  // Filter prompts based on selected tags and view
+  let filteredPrompts = selectedTags.length > 0
     ? mockPrompts.filter(prompt => 
         selectedTags.some(tag => prompt.tags.includes(tag))
       )
     : mockPrompts;
 
+  // Further filter based on selected view
+  if (selectedView === "trending") {
+    filteredPrompts = filteredPrompts.filter(prompt => prompt.trending);
+  }
+  // We would add favorites filtering here in a real app with user auth
+
   return (
     <div className="min-h-screen relative overflow-x-hidden">
       <AnimatedBackground />
       
-      <div className="container mx-auto max-w-7xl">
+      <div className="container mx-auto max-w-6xl">
         <Header />
         <Hero />
         
         <main className="px-6 pb-20">
-          <TagFilter selectedTags={selectedTags} onTagSelect={handleTagSelect} />
+          <TagFilter 
+            selectedTags={selectedTags} 
+            selectedView={selectedView} 
+            onTagSelect={handleTagSelect}
+            onViewSelect={handleViewSelect}
+          />
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
             {filteredPrompts.map(prompt => (
-              <PromptCard key={prompt.id} {...prompt} />
+              <EnhancedPromptCard 
+                key={prompt.id} 
+                id={prompt.id}
+                title={prompt.title} 
+                description={prompt.description}
+                imageUrl={prompt.imageUrl}
+                tags={prompt.tags}
+                trending={prompt.trending}
+              />
             ))}
           </div>
           
           {filteredPrompts.length === 0 && (
             <div className="text-center py-20">
-              <h3 className="text-2xl text-ghibli-forest mb-2">No prompts found</h3>
+              <h3 className="text-2xl text-primary mb-2">No prompts found</h3>
               <p className="text-muted-foreground">Try selecting different tags or clearing your filters.</p>
             </div>
           )}
