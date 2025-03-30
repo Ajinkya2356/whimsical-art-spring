@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Folder, Tag, List, LayoutGrid, Heart, TrendingUp, Star } from 'lucide-react';
+import { LayoutGrid, Tag, TrendingUp, Heart } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 const tags = [
@@ -36,7 +36,7 @@ const TagFilter = ({ selectedTags, selectedView, onTagSelect, onViewSelect }: Ta
     <div className="w-full py-6 space-y-4">
       <div className="flex items-center justify-between mb-2">
         <h2 className="text-xl font-semibold text-primary">Browse Prompts</h2>
-        <div className="flex gap-1 bg-muted rounded-lg p-1">
+        <div className="flex gap-1 bg-muted/30 rounded-lg p-1">
           {views.map(view => (
             <Button 
               key={view.id}
@@ -56,21 +56,19 @@ const TagFilter = ({ selectedTags, selectedView, onTagSelect, onViewSelect }: Ta
         </div>
       </div>
       
-      <ScrollArea className="pb-2 w-full">
-        <div className="flex gap-2 py-1 px-1">
+      <ScrollArea className="w-full">
+        <div className="flex flex-wrap gap-2 py-2 px-1">
           {tags.map(tag => (
-            <div 
+            <Button 
               key={tag.id}
-              className={`category-pill ${
-                tag.id === "all" && selectedTags.length === 0 || selectedTags.includes(tag.id)
-                  ? "active" 
-                  : "inactive"
-              }`}
+              variant={tag.id === "all" && selectedTags.length === 0 || selectedTags.includes(tag.id) ? "default" : "outline"}
+              size="sm"
+              className={`flex items-center gap-2 rounded-full transition-all`}
               onClick={() => onTagSelect(tag.id)}
             >
               {tag.icon}
               <span>{tag.name}</span>
-            </div>
+            </Button>
           ))}
         </div>
       </ScrollArea>
