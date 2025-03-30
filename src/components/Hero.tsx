@@ -3,7 +3,12 @@ import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 
-const Hero = () => {
+interface HeroProps {
+  searchQuery: string;
+  onSearchChange: (query: string) => void;
+}
+
+const Hero = ({ searchQuery, onSearchChange }: HeroProps) => {
   return (
     <section className="relative px-6 py-16 md:py-20 flex flex-col items-center text-center z-10">
       <h1 className="text-4xl md:text-6xl mb-6 text-primary animate-fadeIn bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/80">
@@ -19,6 +24,8 @@ const Hero = () => {
           <Input 
             placeholder="Search for magical prompts..." 
             className="pl-10 py-6 bg-muted/50 border-muted text-primary focus-visible:ring-ghibli-accent w-full rounded-full"
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
           />
         </div>
       </div>

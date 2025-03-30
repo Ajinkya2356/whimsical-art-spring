@@ -2,6 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Folder, Tag, List, LayoutGrid, Heart, TrendingUp, Star } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const tags = [
   { id: "all", name: "All Prompts", icon: <LayoutGrid size={18} /> },
@@ -55,8 +56,8 @@ const TagFilter = ({ selectedTags, selectedView, onTagSelect, onViewSelect }: Ta
         </div>
       </div>
       
-      <div className="overflow-x-auto scrollbar-thin pb-2">
-        <div className="flex gap-2 min-w-max">
+      <ScrollArea className="pb-2 w-full">
+        <div className="flex gap-2 py-1 px-1">
           {tags.map(tag => (
             <div 
               key={tag.id}
@@ -72,7 +73,7 @@ const TagFilter = ({ selectedTags, selectedView, onTagSelect, onViewSelect }: Ta
             </div>
           ))}
         </div>
-      </div>
+      </ScrollArea>
     </div>
   );
 };

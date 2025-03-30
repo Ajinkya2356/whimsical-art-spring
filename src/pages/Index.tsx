@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
 import AnimatedBackground from '@/components/AnimatedBackground';
@@ -57,6 +57,38 @@ const mockPrompts = [
 const Index = () => {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedView, setSelectedView] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [filteredPrompts, setFilteredPrompts] = useState(mockPrompts);
+
+  // Filter prompts whenever search query, tags, or view changes
+  useEffect(() => {
+    let filtered = mockPrompts;
+    
+    // Filter by search query if it exists
+    if (searchQuery.trim() !== "") {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(prompt => 
+        prompt.title.toLowerCase().includes(query) || 
+        prompt.description.toLowerCase().includes(query) ||
+        prompt.tags.some(tag => tag.toLowerCase().includes(query))
+      );
+    }
+    
+    // Filter by selected tags if any are selected
+    if (selectedTags.length > 0) {
+      filtered = filtered.filter(prompt => 
+        selectedTags.some(tag => prompt.tags.includes(tag))
+      );
+    }
+    
+    // Filter by view selection
+    if (selectedView === "trending") {
+      filtered = filtered.filter(prompt => prompt.trending);
+    }
+    // We would add favorites filtering here in a real app with user auth
+    
+    setFilteredPrompts(filtered);
+  }, [searchQuery, selectedTags, selectedView]);
 
   const handleTagSelect = (tag: string) => {
     if (tag === "all") {
@@ -75,18 +107,9 @@ const Index = () => {
     setSelectedView(view);
   };
 
-  // Filter prompts based on selected tags and view
-  let filteredPrompts = selectedTags.length > 0
-    ? mockPrompts.filter(prompt => 
-        selectedTags.some(tag => prompt.tags.includes(tag))
-      )
-    : mockPrompts;
-
-  // Further filter based on selected view
-  if (selectedView === "trending") {
-    filteredPrompts = filteredPrompts.filter(prompt => prompt.trending);
-  }
-  // We would add favorites filtering here in a real app with user auth
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+  };
 
   return (
     <div className="min-h-screen relative overflow-x-hidden">
@@ -94,7 +117,7 @@ const Index = () => {
       
       <div className="container mx-auto max-w-6xl">
         <Header />
-        <Hero />
+        <Hero searchQuery={searchQuery} onSearchChange={handleSearchChange} />
         
         <main className="px-6 pb-20">
           <TagFilter 
