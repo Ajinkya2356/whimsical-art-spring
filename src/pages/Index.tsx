@@ -27,7 +27,7 @@ const mockPrompts = [
     id: "3",
     title: "River Guardian",
     description: "A wise dragon spirit coiled in a crystal-clear river, scales shimmer like opals under the moonlight.",
-    imageUrl: "https://images.unsplash.com/photo-1472396961693-142e6e269027",
+    imageUrl: "/lovable-uploads/f1ac9472-a94d-40e4-a128-f8aad3c33fc3.png",
     tags: ["Animal", "Spirit", "Magic", "Fantasy"],
     trending: true
   },
@@ -150,6 +150,13 @@ const Index = () => {
         </main>
         
         <footer className="py-8 text-center text-sm text-muted-foreground">
+          <div className="mb-4">
+            <img
+              src="/lovable-uploads/580ebd3d-2cff-4c39-9529-2eaef63b5a5c.png"
+              alt="Ghibli characters"
+              className="w-32 h-auto mx-auto rounded-lg"
+            />
+          </div>
           <p>© 2023 Ghibli Prompt Garden. Inspired by the magical worlds of Studio Ghibli.</p>
         </footer>
       </div>
