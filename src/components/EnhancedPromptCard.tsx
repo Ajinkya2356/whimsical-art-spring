@@ -13,11 +13,12 @@ export interface EnhancedPromptCardProps {
   imageUrl: string;
   tags: string[];
   trending?: boolean;
+  like_count:number;
 }
 
 const MAX_DESCRIPTION_LENGTH = 120;
 
-const EnhancedPromptCard = ({ id, title, description, imageUrl, tags, trending = false }: EnhancedPromptCardProps) => {
+const EnhancedPromptCard = ({ id, title, description, imageUrl, tags, trending = false,like_count }: EnhancedPromptCardProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const isDescriptionTruncated = description.length > MAX_DESCRIPTION_LENGTH;
   const truncatedDescription = isDescriptionTruncated 
@@ -82,7 +83,7 @@ const EnhancedPromptCard = ({ id, title, description, imageUrl, tags, trending =
         </div>
         
         <div className="mt-auto pt-4 border-t border-muted/20 mt-4">
-          <PromptActions promptId={id} promptText={description} />
+          <PromptActions promptId={id} promptText={description} like_count={like_count}/>
         </div>
       </div>
     </div>

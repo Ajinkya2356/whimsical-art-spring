@@ -1,14 +1,13 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { 
-  Clipboard, 
-  Heart, 
-  Bot, 
-  MessageSquare, 
-  MessageCircle, 
-  Code, 
-  Lightbulb, 
+import {
+  Clipboard,
+  ThumbsUp,
+  Bot,
+  MessageSquare,
+  MessageCircle,
+  Code,
+  Lightbulb,
   Zap,
   Check,
   ExternalLink
@@ -20,10 +19,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from '@/hooks/use-toast';
+import supabase from '../utils/supabase';
 
 interface PromptActionsProps {
   promptId: string;
   promptText: string;
+  like_count: number;
 }
 
 const llmOptions = [
@@ -34,8 +35,9 @@ const llmOptions = [
   { id: 'stable-diffusion', name: 'Stable Diffusion', icon: <Zap size={16} /> },
 ];
 
-const PromptActions = ({ promptId, promptText }: PromptActionsProps) => {
+const PromptActions = ({ promptId, promptText, like_count: initialLikeCount }: PromptActionsProps) => {
   const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(initialLikeCount);
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(promptText);
@@ -45,19 +47,51 @@ const PromptActions = ({ promptId, promptText }: PromptActionsProps) => {
     });
   };
 
-  const toggleLike = () => {
-    setLiked(!liked);
+  const toggleLike = async () => {
+    const newLikedState = !liked;
+    const newLikeCount = newLikedState ? likeCount + 1 : likeCount - 1;
+
+    setLiked(newLikedState);
+    setLikeCount(newLikeCount);
+
     toast({
-      title: liked ? "Removed from favorites" : "Added to favorites",
-      description: liked ? "Prompt removed from your favorites" : "Prompt added to your favorites",
+      title: newLikedState ? "Added to favorites" : "Removed from favorites",
+      description: newLikedState ? "Prompt added to your favorites" : "Prompt removed from your favorites",
     });
+
+    // Optimistically update the UI, then update Supabase in the background
+    try {
+      const { error } = await supabase.rpc('increment_like_count', {
+        prompt_id: promptId
+      });
+
+      if (error) {
+        console.error("Error updating like count:", error);
+        // Revert the local state if the update fails
+        setLiked(liked);
+        setLikeCount(likeCount);
+        toast({
+          title: "Error",
+          description: "Failed to update like count. Please try again.",
+        });
+      }
+    } catch (error) {
+      console.error("Error updating like count:", error);
+      // Revert the local state if the update fails
+      setLiked(liked);
+      setLikeCount(likeCount);
+      toast({
+        title: "Error",
+        description: "Failed to update like count. Please try again.",
+      });
+    }
   };
 
   const openLLM = (llmId: string) => {
     // In a real app, this would redirect to the appropriate LLM with the prompt
     let url = '';
-    
-    switch(llmId) {
+
+    switch (llmId) {
       case 'chatgpt':
         url = `https://chat.openai.com/new?prompt=${encodeURIComponent(promptText)}`;
         break;
@@ -76,7 +110,7 @@ const PromptActions = ({ promptId, promptText }: PromptActionsProps) => {
       default:
         url = '';
     }
-    
+
     if (url) {
       window.open(url, '_blank');
     }
@@ -84,26 +118,26 @@ const PromptActions = ({ promptId, promptText }: PromptActionsProps) => {
 
   return (
     <div className="flex items-center gap-2">
-      <Button 
-        variant="outline" 
-        size="sm" 
+      <Button
+        variant="outline"
+        size="sm"
         onClick={copyToClipboard}
         className="text-muted-foreground hover:text-primary border-muted"
       >
         <Clipboard size={16} className="mr-1" />
         Copy
       </Button>
-      
+
       <Button
         variant="outline"
         size="sm"
         onClick={toggleLike}
         className={`border-muted ${liked ? 'text-red-400 hover:text-red-500' : 'text-muted-foreground hover:text-primary'}`}
       >
-        <Heart size={16} className="mr-1" fill={liked ? 'currentColor' : 'none'} />
-        {liked ? 'Liked' : 'Like'}
+        <ThumbsUp size={16} className="mr-1" fill={liked ? 'currentColor' : 'none'} />
+        {likeCount}
       </Button>
-      
+
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
@@ -115,10 +149,10 @@ const PromptActions = ({ promptId, promptText }: PromptActionsProps) => {
             Use LLM
           </Button>
         </DropdownMenuTrigger>
-        
+
         <DropdownMenuContent align="end" className="bg-card w-48">
           {llmOptions.map(option => (
-            <DropdownMenuItem 
+            <DropdownMenuItem
               key={option.id}
               onClick={() => openLLM(option.id)}
               className="flex items-center gap-2 cursor-pointer"

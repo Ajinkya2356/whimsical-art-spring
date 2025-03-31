@@ -5,88 +5,59 @@ import AnimatedBackground from '@/components/AnimatedBackground';
 import TagFilter from '@/components/TagFilter';
 import EnhancedPromptCard from '@/components/EnhancedPromptCard';
 import { icons } from 'lucide-react';
-// Mock data - in a real app, this would come from Supabase
-const mockPrompts = [
-  {
-    id: "1",
-    title: "Spirit of the Forest",
-    description: "A gentle forest spirit with glowing eyes, surrounded by tiny floating light orbs in a misty ancient forest at dusk.",
-    imageUrl: "https://images.unsplash.com/photo-1518495973542-4542c06a5843",
-    tags: ["Forest", "Spirit", "Magic"],
-    trending: true
-  },
-  {
-    id: "2",
-    title: "Sky Castle Journey",
-    description: "A flying castle drifting among sunset clouds, with hanging gardens and waterfalls cascading from its edges.",
-    imageUrl: "https://images.unsplash.com/photo-1482938289607-e9573fc25ebb",
-    tags: ["Sky", "Castle", "Fantasy"]
-  },
-  {
-    id: "3",
-    title: "River Guardian",
-    description: "A wise dragon spirit coiled in a crystal-clear river, scales shimmer like opals under the moonlight.",
-    imageUrl: "https://images.unsplash.com/photo-1472396961693-142e6e269027",
-    tags: ["Animal", "Spirit", "Magic", "Fantasy"],
-    trending: true
-  },
-  {
-    id: "4",
-    title: "Ancient Bathhouse",
-    description: "A traditional Japanese bathhouse perched on a cliff, steam rising, lanterns glowing, with spirit creatures as guests.",
-    imageUrl: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05",
-    tags: ["Spirit", "Fantasy", "Character"]
-  },
-  {
-    id: "5",
-    title: "Wind Valley",
-    description: "Rolling green hills under a vast blue sky, with wildflowers dancing in the wind and small cottages nestled in the valleys.",
-    imageUrl: "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9",
-    tags: ["Landscape", "Sky"]
-  },
-  {
-    id: "6",
-    title: "Whisper of the Waves",
-    description: "A small fishing village on stilts above a tranquil sea, with paper lanterns reflecting in the water at twilight.",
-    imageUrl: "https://images.unsplash.com/photo-1500673922987-e212871fec22",
-    tags: ["Ocean", "Landscape"]
-  }
-];
+import supabase from '../utils/supabase';
+import { useToast } from '@/hooks/use-toast';
+
+
+export interface Prompt {
+  id: string;
+  title: string;
+  description?: string;
+  content?: string;
+  like_count?: number;
+  image_url?: string;
+  created_at?: string;  // Using ISO 8601 format for timestamps
+  updated_at?: string;
+  deleted_at?: string;
+  tags: string[];  // The array of tags
+  trending: boolean;
+}
 
 const Index = () => {
+  const { toast } = useToast();
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedView, setSelectedView] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [filteredPrompts, setFilteredPrompts] = useState(mockPrompts);
+  const [filteredPrompts, setFilteredPrompts] = useState<Prompt[]>([]);
 
   // Filter prompts whenever search query, tags, or view changes
   useEffect(() => {
-    let filtered = mockPrompts;
-
-    // Filter by search query if it exists
-    if (searchQuery.trim() !== "") {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(prompt =>
-        prompt.title.toLowerCase().includes(query) ||
-        prompt.description.toLowerCase().includes(query) ||
-        prompt.tags.some(tag => tag.toLowerCase().includes(query))
-      );
+    async function getPrompts() {
+      try {
+        const { data, error } = await supabase.rpc('get_prompts', {
+          page: 1,
+          page_limit: 20,
+          search_tags: selectedTags.length > 0 ? selectedTags : undefined,
+          is_trending: selectedView === "trending" ? true : undefined,
+          search_query: searchQuery || undefined
+        });
+        console.log(data)
+        if (error) {
+          toast({
+            title: 'Error',
+            description: error.message
+          })
+        } else {
+          setFilteredPrompts(data?.prompts ?? []);
+        }
+      } catch (e) {
+        toast({
+          title: 'Error',
+          description: "Failed to get the prompts!"
+        })
+      }
     }
-
-    // Filter by selected tags if any are selected
-    if (selectedTags.length > 0) {
-      filtered = filtered.filter(prompt =>
-        selectedTags.some(tag => prompt.tags.includes(tag))
-      );
-    }
-
-    // Filter by view selection
-    if (selectedView === "trending") {
-      filtered = filtered.filter(prompt => prompt.trending);
-    }
-    // We would add favorites filtering here in a real app with user auth
-
-    setFilteredPrompts(filtered);
+    getPrompts()
   }, [searchQuery, selectedTags, selectedView]);
 
   const handleTagSelect = (tag: string) => {
@@ -116,55 +87,61 @@ const Index = () => {
 
       <div className="container mx-auto max-w-6xl">
         <Header />
-        <Hero searchQuery={searchQuery} onSearchChange={handleSearchChange} />
+        <Hero />
 
-        <main className="px-6 pb-20">
-          <TagFilter
-            selectedTags={selectedTags}
-            selectedView={selectedView}
-            onTagSelect={handleTagSelect}
-            onViewSelect={handleViewSelect}
-          />
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
-            {filteredPrompts.map(prompt => (
-              <EnhancedPromptCard
-                key={prompt.id}
-                id={prompt.id}
-                title={prompt.title}
-                description={prompt.description}
-                imageUrl={prompt.imageUrl}
-                tags={prompt.tags}
-                trending={prompt.trending}
-              />
-            ))}
-          </div>
-
-          {filteredPrompts.length === 0 && (
-            <div className="text-center py-20">
-              <h3 className="text-2xl text-primary mb-2">No prompts found</h3>
-              <p className="text-muted-foreground">Try selecting different tags or clearing your filters.</p>
-            </div>
-          )}
-        </main>
-
-        <footer className="py-8 text-center text-sm text-muted-foreground">
-          <p>
-            © 2024 Made with ❤️ by <a href="https://github.com/Ajinkya2356" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Ajinkya Jagtap</a>.
-          </p>
-          <div className="flex justify-center space-x-4 mt-2">
-            <a href="https://github.com/Ajinkya2356" target="_blank" rel="noopener noreferrer" className="hover:text-primary">
-
-              <icons.Github className="text-muted-foreground" />
-
-            </a>
-            <a href="https://linkedin.com/in/ajinkya-ai" target="_blank" rel="noopener noreferrer" className="hover:text-primary">
-              <icons.Linkedin className="text-muted-foreground" />
-            </a>
-          </div>
-        </footer>
       </div>
+
+      <main className="px-6 pb-20">
+
+        <TagFilter
+          selectedTags={selectedTags}
+          selectedView={selectedView}
+          searchQuery={searchQuery}
+          onSearchChange={handleSearchChange}
+          onTagSelect={handleTagSelect}
+          onViewSelect={handleViewSelect}
+        />
+
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-4">
+          {filteredPrompts.map(prompt => (
+            <EnhancedPromptCard
+              key={prompt.id}
+              id={prompt.id}
+              title={prompt.title}
+              description={prompt.description}
+              imageUrl={prompt.image_url}
+              tags={prompt.tags}
+              trending={selectedView == "trending"}
+              like_count={prompt.like_count}
+            />
+          ))}
+        </div>
+
+        {filteredPrompts.length === 0 && (
+          <div className="text-center py-20">
+            <h3 className="text-2xl text-primary mb-2">No prompts found</h3>
+            <p className="text-muted-foreground">Try selecting different tags or clearing your filters.</p>
+          </div>
+        )}
+      </main>
+
+      <footer className="py-8 text-center text-sm text-muted-foreground">
+        <p>
+          © 2024 Made with ❤️ by <a href="https://github.com/Ajinkya2356" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Ajinkya Jagtap</a>.
+        </p>
+        <div className="flex justify-center space-x-4 mt-2">
+          <a href="https://github.com/Ajinkya2356" target="_blank" rel="noopener noreferrer" className="hover:text-primary">
+
+            <icons.Github className="text-muted-foreground" />
+
+          </a>
+          <a href="https://linkedin.com/in/ajinkya-ai" target="_blank" rel="noopener noreferrer" className="hover:text-primary">
+            <icons.Linkedin className="text-muted-foreground" />
+          </a>
+        </div>
+      </footer>
     </div>
+
   );
 };
 
