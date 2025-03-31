@@ -93,19 +93,19 @@ const PromptActions = ({ promptId, promptText, like_count: initialLikeCount }: P
 
     switch (llmId) {
       case 'chatgpt':
-        url = `https://chat.openai.com/new?prompt=${encodeURIComponent(promptText)}`;
+        url = `https://chat.openai.com/?model=gpt-4&prompt=${encodeURIComponent(promptText)}`;
         break;
       case 'claude':
-        url = `https://claude.ai?prompt=${encodeURIComponent(promptText)}`;
+        url = `https://claude.ai/chat?prompt=${encodeURIComponent(promptText)}`;
         break;
       case 'midjourney':
-        url = `https://www.midjourney.com?prompt=${encodeURIComponent(promptText)}`;
+        url = `https://www.midjourney.com/?prompt=${encodeURIComponent(promptText)}`;
         break;
       case 'dalle':
-        url = `https://labs.openai.com?prompt=${encodeURIComponent(promptText)}`;
+        url = `https://labs.openai.com/?prompt=${encodeURIComponent(promptText)}`;
         break;
       case 'stable-diffusion':
-        url = `https://stability.ai?prompt=${encodeURIComponent(promptText)}`;
+        url = `https://stability.ai/?prompt=${encodeURIComponent(promptText)}`;
         break;
       default:
         url = '';
@@ -124,7 +124,7 @@ const PromptActions = ({ promptId, promptText, like_count: initialLikeCount }: P
         onClick={copyToClipboard}
         className="text-muted-foreground hover:text-primary border-muted"
       >
-        <Clipboard size={16} className="mr-1" />
+        <Clipboard size={16} />
         Copy
       </Button>
 
@@ -132,10 +132,14 @@ const PromptActions = ({ promptId, promptText, like_count: initialLikeCount }: P
         variant="outline"
         size="sm"
         onClick={toggleLike}
-        className={`border-muted ${liked ? 'text-red-400 hover:text-red-500' : 'text-muted-foreground hover:text-primary'}`}
+        className={`border-muted flex justify-center items-center ${liked ? 'text-red-400 hover:text-red-500' : 'text-muted-foreground hover:text-primary'}`}
       >
-        <ThumbsUp size={16} className="mr-1" fill={liked ? 'currentColor' : 'none'} />
-        {likeCount}
+        <ThumbsUp size={16} fill={liked ? 'currentColor' : 'none'} />
+        {likeCount >= 1_000_000
+          ? `${Math.ceil(likeCount / 1_000_000)}M`
+          : likeCount >= 1_000
+            ? `${Math.ceil(likeCount / 1_000)}K`
+            : likeCount}
       </Button>
 
       <DropdownMenu>
@@ -145,7 +149,7 @@ const PromptActions = ({ promptId, promptText, like_count: initialLikeCount }: P
             size="sm"
             className="text-muted-foreground hover:text-primary border-muted"
           >
-            <Bot size={16} className="mr-1" />
+            <Bot size={16} />
             Use LLM
           </Button>
         </DropdownMenuTrigger>

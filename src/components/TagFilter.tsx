@@ -1,23 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { LayoutGrid, Tag, TrendingUp, Heart } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
-
-const tags = [
-  { id: "all", name: "All Prompts", icon: <LayoutGrid size={18} /> },
-  { id: "forest", name: "Forest", icon: <Tag size={18} /> },
-  { id: "spirit", name: "Spirit", icon: <Tag size={18} /> },
-  { id: "landscape", name: "Landscape", icon: <Tag size={18} /> },
-  { id: "character", name: "Character", icon: <Tag size={18} /> },
-  { id: "magic", name: "Magic", icon: <Tag size={18} /> },
-  { id: "sky", name: "Sky", icon: <Tag size={18} /> },
-  { id: "ocean", name: "Ocean", icon: <Tag size={18} /> },
-  { id: "castle", name: "Castle", icon: <Tag size={18} /> },
-  { id: "animal", name: "Animal", icon: <Tag size={18} /> },
-  { id: "fantasy", name: "Fantasy", icon: <Tag size={18} /> }
-];
+import supabase from '../utils/supabase';
+import { useToast } from '@/hooks/use-toast';
 
 const views = [
   { id: "all", name: "All", icon: <LayoutGrid size={18} /> },
@@ -34,6 +22,36 @@ interface TagFilterProps {
 }
 
 const TagFilter = ({ selectedTags, selectedView, searchQuery, onTagSelect, onViewSelect, onSearchChange }: TagFilterProps) => {
+  const [uniqueTags, setUniqueTags] = useState<string[]>([]);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    async function fetchUniqueTags() {
+      try {
+        const { data, error } = await supabase.rpc('get_unique_tags', {});
+
+        if (error) {
+          console.error("Error fetching unique tags:", error);
+          toast({
+            title: "Error",
+            description: "Failed to fetch unique tags. Please try again.",
+          });
+        } else {
+          // Assuming data is an array of objects like { tag: "tagName" }
+          setUniqueTags(data?.map(item => item.tag) || []);
+        }
+      } catch (error) {
+        console.error("Error fetching unique tags:", error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch unique tags. Please try again.",
+        });
+      }
+    }
+
+    fetchUniqueTags();
+  }, []);
+
   return (
     <div className="w-full py-6 space-y-4">
       <div className="flex items-center justify-between mb-2">
@@ -69,16 +87,26 @@ const TagFilter = ({ selectedTags, selectedView, searchQuery, onTagSelect, onVie
       </div>
       <ScrollArea className="w-full">
         <div className="flex flex-wrap gap-2 py-2 px-1">
-          {tags.map(tag => (
+          <Button
+            key="all"
+            variant={selectedTags.length === 0 ? "default" : "outline"}
+            size="sm"
+            className={`flex items-center gap-2 rounded-full transition-all`}
+            onClick={() => onTagSelect("all")}
+          >
+            <LayoutGrid size={18} />
+            <span>All Prompts</span>
+          </Button>
+          {uniqueTags.map(tag => (
             <Button
-              key={tag.id}
-              variant={tag.id === "all" && selectedTags.length === 0 || selectedTags.includes(tag.id) ? "default" : "outline"}
+              key={tag}
+              variant={selectedTags.includes(tag) ? "default" : "outline"}
               size="sm"
               className={`flex items-center gap-2 rounded-full transition-all`}
-              onClick={() => onTagSelect(tag.id)}
+              onClick={() => onTagSelect(tag)}
             >
-              {tag.icon}
-              <span>{tag.name}</span>
+              <Tag size={18} />
+              <span>{tag}</span>
             </Button>
           ))}
         </div>
